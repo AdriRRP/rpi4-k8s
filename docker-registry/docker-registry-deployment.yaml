@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-registry
+  labels:
+    app: docker-registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: docker-registry
+  template:
+    metadata:
+      labels:
+        app: docker-registry
+    spec:
+      containers:
+      - name: docker-registry
+        image: registry:2.6.2
+        volumeMounts:
+        - name: repo-vol
+          mountPath: "/var/lib/registry"
+        - name: auth-vol
+          mountPath: "/auth"
+          readOnly: true
+        env:
+        - name: REGISTRY_AUTH
+          value: "htpasswd"
+        - name: REGISTRY_AUTH_HTPASSWD_REALM
+          value: "Docker Registry Realm"
+        - name: REGISTRY_AUTH_HTPASSWD_PATH
+          value: "/auth/htpasswd"
+        - name: REGISTRY_STORAGE_DELETE_ENABLED
+          value: "true"
+      volumes:
+      - name: repo-vol
+        persistentVolumeClaim:
+          claimName: docker-registry-nfs-pvc
+      - name: auth-vol
+        secret:
+          secretName: docker-registry-htpasswd

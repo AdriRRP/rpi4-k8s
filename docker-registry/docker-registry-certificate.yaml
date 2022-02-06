@@ -1,0 +1,11 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: certificate-docker.adrianramosrp.com
+spec:
+  dnsNames:
+    - docker.adrianramosrp.com
+  secretName: secret-docker.adrianramosrp.com
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
