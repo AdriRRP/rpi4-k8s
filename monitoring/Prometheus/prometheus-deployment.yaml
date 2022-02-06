@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-deployment
+  namespace: monitoring
+  labels:
+    app: prometheus-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-server
+  template:
+    metadata:
+      labels:
+        app: prometheus-server
+    spec:
+      containers:
+      - name: prometheus
+        image: prom/prometheus-linux-arm64
+        args:
+          - '--storage.tsdb.retention=6h'
+          - '--storage.tsdb.path=/prometheus/'
+          - '--config.file=/etc/prometheus/prometheus.yml'
+        ports:
+        - name: web
+          containerPort: 9090
+        volumeMounts:
+        - name: prometheus-config-volume
+          mountPath: /etc/prometheus/
+        - name: prometheus-storage-volume
+          mountPath: /prometheus/
+      restartPolicy: Always
+
+      volumes:
+      - name: prometheus-config-volume
+        configMap:
+            defaultMode: 420
+            name: prometheus-config
+
+      - name: prometheus-storage-volume
+        persistentVolumeClaim:
+            claimName: prometheus-nfs-pvc
