@@ -47,9 +47,9 @@ sudo bash -c "cat <<EOF >> /etc/hosts
 EOF"
 ```
 
-5. Update `/etc/hosts`. On *rpi4-master* Raspberry (arbitrarily choose one of them):
+5. Update `/etc/hostname`. On *rpi4-master* Raspberry (arbitrarily choose one of them):
 
-```
+```bash
 sudo -c "echo 'rpi4-master' > /etc/hostname"
 ```
 
