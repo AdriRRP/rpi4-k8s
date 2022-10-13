@@ -109,7 +109,7 @@ sudo swapoff -a
 
 10. Install kubeadm, kubelet and kubectl on each Raspberry.
 
-```
+```bash
 sudo apt-get update
 sudo apt-get install -y apt-transport-https ca-certificates curl
 
