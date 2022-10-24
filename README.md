@@ -236,12 +236,196 @@ Recipe to build a kubernetes cluster with [Raspberry Pi 4 model B](https://www.r
     dnsutils   1/1       Running   0          <some-time>
     ```
 
+  - Check local *DNS* resolution:
+
+    ```bash
+    kubectl exec -i -t dnsutils -- nslookup kubernetes.default
+    ```
+
+    ```log
+    Server:		10.96.0.10
+    Address:	10.96.0.10#53
+
+    Name:	kubernetes.default.svc.cluster.local
+    Address: 10.96.0.1
+
+    ```
+
+  - Check external *DNS* resolution:
+
+    ```bash
+    kubectl exec -i -t dnsutils -- nslookup google.com
+    ```
+
+    ```log
+    Server:		10.96.0.10
+    Address:	10.96.0.10#53
+
+    Name:	google.com
+    Address: 172.217.17.14
+    ```
+
+  - Clean out:
+
+    ```bash
+    kubectl delete -f https://k8s.io/examples/admin/dns/dnsutils.yaml
+    ```
+  
+  
+
 
 
 
 ## Recommended Additions
-### Monitoring
+
+Below are a series of suggestions and complements to complete the functionality of the cluster.
+
 ### NFS storage
+
+The idea is to connect an external SSD disk that will serve to store the volumes of our cluster, increasing the storage memory, the speed and decoupling it from the flash memories of the Raspberries.
+
+We will mount the SSD and boot the NFS server on *rpi4-master*, as by default this node is tainted so that only system pods run on it (and will potentially have more resources available)
+
+#### Server
+
+1. Install NFS kernel server:
+
+```bash
+sudo apt install nfs-kernel-server -y
+```
+
+2. Create shared folder:
+
+```bash
+sudo mkdir /data
+sudo chown nobody:nogroup /data
+```
+
+3. Format and tag our volume:
+
+```bash
+sudo mkfs -t ext4 /dev/sdb1
+sudo e2label /dev/sdb1 nfs-volume
+```
+
+4. Note disk UUID:
+
+```bash
+lsblk -f
+```
+
+```log
+NAME   FSTYPE   FSVER LABEL       UUID                                 FSAVAIL FSUSE% MOUNTPOINTS
+...
+sda                                                                                   
+`-sda1 ext4     1.0   nfs-volume  829a8d76-bae4-4b52-9f32-8f25c569f74f  803.1G     7% /data
+
+```
+5. Automount volume on boot:
+
+```bash
+sudo vim /etc/fstab
+```
+
+- Add the following line:
+
+```fstab
+UUID=829a8d76-bae4-4b52-9f32-8f25c569f74f /data    auto nosuid,nodev,nofail,x-gvfs-show 0 0
+```
+
+- Where:
+  - *UUID=829a8d76-bae4-4b52-9f32-8f25c569f74f*: is the UUID of the drive. You don't have to use the UUID here. You could just use /dev/sdj, but it's always safer to use the UUID as that will never change (whereas the device name could).
+  
+  - */data*: is the mount point for the device.
+  - *auto*: automatically determine the file system
+  - *nosuid*: specifies that the filesystem cannot contain set userid files. This prevents root escalation and other security issues.
+  - *nodev*: specifies that the filesystem cannot contain special devices (to prevent access to random device hardware).
+  - *nofail*: removes the errorcheck.
+  - *x-gvfs-show*: show the mount option in the file manager. If this is on a GUI-less server, this option won't be necessary.
+  - *0*: determines which filesystems need to be dumped (0 is the default).
+  - *0*: determine the order in which filesystem checks are done at boot time (0 is the default).
+
+This is enough because we have no UI:
+
+```fstab
+UUID=829a8d76-bae4-4b52-9f32-8f25c569f74f /data    auto nosuid,nodev,nofail 0 0
+```
+
+6. Mount the volume: 
+
+```bash
+sudo mount -a
+```
+
+7. Add the clients we want to allow access to (*rpi4-slave1*, *rpi4-slave2*, *rpi4-slave3* and any other machines you want to have access to):
+
+```bash
+sudo vim /etc/exports
+```
+Add:
+
+```fstab
+/data       rpi4-slave1(rw,sync,no_subtree_check)
+/data       rpi4-slave2(rw,sync,no_subtree_check)
+/data       rpi4-slave3(rw,sync,no_subtree_check)
+/data       other_machine(rw,sync,no_subtree_check)
+```
+
+8. Do exports:
+
+```bash
+sudo exportfs -a
+```
+
+9. Reboot
+
+```bash
+sudo reboot
+```
+
+#### Clients
+
+Now let's configure the clients (*rpi4-slave1*, *rpi4-slave2*, *rpi4-slave3* and any other machines you want to have access to):
+
+1. Install nfs client:
+
+```bash
+sudo apt install nfs-common
+```
+
+2. Create shared folder:
+
+```bash
+sudo mkdir /data
+```
+
+3. Assign permissions:
+
+```bash
+sudo chown nobody:nogroup /data
+```
+
+4. Edit fstab:
+
+```bash
+sudo vim /etc/fstab
+```
+
+5. Add the following line:
+
+```bash
+rpi4-master:/data     /data   nfs     defaults,nfsvers=3 0 0
+```
+
+**IMPORTANT**: nfsvers=3 is needed to avoid permission denied.
+
+6. Mount shared volume:
+
+```bash
+sudo mount -a
+```
+
+### Monitoring
 ### NFS volume provisioner
 ### Cert Manager
 ### Docker Registry
@@ -252,6 +436,9 @@ The pod goes into a restart loop because it cannot resolve the image registry. Y
  ```
  Failed to pull image "registry.k8s.io/e2e-test-images/jessie-dnsutils:1.3": rpc error: code = Unknown desc = failed to pull and unpack image "registry.k8s.io/e2e-test-images/jessie-dnsutils:1.3": failed to resolve reference "registry.k8s.io/e2e-test-images/jessie-dnsutils:1.3": failed to do request: Head "https://registry.k8s.io/v2/e2e-test-images/jessie-dnsutils/manifests/1.3": dial tcp: lookup registry.k8s.io: Temporary failure in name resolution
  ```
+ It is likely that the cidr network you have chosen is overlapping your local network. Try to install the cluster in an IP range that is not in use.
+
+
 
 ## References
 - [Installing kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/)
