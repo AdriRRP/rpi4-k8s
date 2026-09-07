@@ -275,6 +275,7 @@ class ProjectPolicyTests(unittest.TestCase):
         workflow = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text()
         self.assertIn("./tools/validate.sh", workflow)
         self.assertIn("schedule:", workflow)
+        self.assertIn("github.event_name == 'workflow_dispatch'", workflow)
         self.assertIn("release_catalog_audit.py", workflow)
 
     def test_ci_validates_native_arm64_and_scans_the_control_image(self):

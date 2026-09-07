@@ -86,7 +86,9 @@ jobs:
           severity-cutoff: critical
 
       - name: Audit stable upstream releases
-        if: github.event_name == 'schedule' && matrix.arch == 'amd64'
+        if: >-
+          matrix.arch == 'amd64' &&
+          (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >
