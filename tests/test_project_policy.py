@@ -390,7 +390,7 @@ class ProjectPolicyTests(unittest.TestCase):
         deployment = (registry_root / "templates" / "registry-deployment.yml.j2").read_text()
         config = (registry_root / "templates" / "registry-configmap.yml.j2").read_text()
 
-        self.assertIn("ghcr.io/project-zot/zot:v2.1.20@sha256:", group_vars)
+        self.assertIn("ghcr.io/project-zot/zot:v2.1.21@sha256:", group_vars)
         self.assertIn("registry_allow_nonempty_legacy_migration: false", defaults)
         self.assertIn("registry_allow_insecure_external_exposure: false", defaults)
         self.assertIn("Refuse implicit migration of non-empty legacy registries", legacy_tasks)

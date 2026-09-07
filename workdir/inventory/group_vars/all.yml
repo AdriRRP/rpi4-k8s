@@ -43,10 +43,10 @@ platform_release_catalog:
       "1.35": "1.36.3"
       "1.36": "1.37.0"
   runtime:
-    containerd_version: "2.3.4"
+    containerd_version: "2.3.5"
     containerd_checksums:
-      amd64: "9d68969855fbf676cdb8ed758e420fb048d61f984f61de3e53eddfebe484d168"
-      arm64: "a985fbb7e18fc0362d31a055338f5d7b0e087a3e27f14c70d1c5965399a29f95"
+      amd64: "2f0a095a71e3262d0d91ff0e50e2e4ae73c3866c4d1ff6a15f341097fba3dd44"
+      arm64: "06f46cbc073872c5ad1fbc922a53543e9a26b798d62ff106d44639dcb9947942"
     containerd_service_checksum: "1941362cbaa89dd591b99c32b050d82c583d3cd2e5fa63085d7017457ec5fca8"
     runc_version: "1.5.1"
     runc_checksums:
@@ -69,7 +69,7 @@ platform_release_catalog:
     prometheus_image: >-
       prom/prometheus:v3.14.0@sha256:5ce7540c3c00ef4ab0c9d2c995c6a5b9c421f44b4a115d97a2c7af3b1c21cbb0
     grafana_image: >-
-      grafana/grafana:13.2.0@sha256:3fd54ae1214669f8355f065ec9f6445d5279a3d77095ab048ca045685272429b
+      grafana/grafana:13.2.1@sha256:f772d434e8fab0049deb2b1b30abd43342bcfca1537614aa8d36080232cf4283
     node_exporter_image: >-
       quay.io/prometheus/node-exporter:v1.12.1@sha256:1b4e4438faca4dd7e001dd445d161a4a2091b0fededa84093b3a8dfeae1f1be0
     metrics_server_images:
@@ -106,7 +106,7 @@ platform_release_catalog:
     nfs_provisioner_image: >-
       registry.k8s.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2@sha256:63d5e04551ec8b5aae83b6f35938ca5ddc50a88d85492d9731810c31591fa4c9
     registry_image: >-
-      ghcr.io/project-zot/zot:v2.1.20@sha256:542e25be4d32e7879c0cfad93492a93c81b1e059cbd2d30d485d4bd567318234
+      ghcr.io/project-zot/zot:v2.1.21@sha256:6b69512c00dceaad05b1144e6079aac6aa7309d7fd200f9947ecb1de09cf48c8
   validation:
     smoke_test_image: >-
       busybox:1.37.0@sha256:9db7b59979c38555a39def84a31fb98b5296952f9e3afd4f6f11f05b07adfab0
